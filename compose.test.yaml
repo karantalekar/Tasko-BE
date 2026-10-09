@@ -1,0 +1,31 @@
+# Completely separate services and ephemeral test data; never uses compose.yaml.
+name: tasko-tests
+services:
+  tests:
+    build:
+      context: .
+      target: test
+    environment:
+      TEST_MONGO_URI: mongodb://mongo-test:27017
+      TEST_REDIS_URL: redis://redis-test:6379/0
+    depends_on:
+      mongo-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+  mongo-test:
+    image: mongo:8.0
+    tmpfs: [/data/db, /data/configdb]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand('ping').ok ? 0 : 1)"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+  redis-test:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
