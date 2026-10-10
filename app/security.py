@@ -50,7 +50,7 @@ async def make_session(request: Request, response: Response, user):
         token,
         httponly=True,
         secure=request.app.state.settings.cookie_secure,
-        samesite="lax",
+        samesite=request.app.state.settings.cookie_samesite,
         max_age=request.app.state.settings.session_hours * 3600,
         path="/",
     )

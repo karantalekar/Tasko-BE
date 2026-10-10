@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -10,6 +12,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     allowed_origins: list[str] = ["http://localhost:3000"]
     cookie_secure: bool = True
+    cookie_samesite: Literal["lax", "strict", "none"] = "lax"
     session_hours: int = Field(default=24, ge=1, le=168)
     auth_rate_limit: int = Field(default=5, ge=1)
     api_rate_limit: int = Field(default=120, ge=1)
@@ -22,4 +25,6 @@ class Settings(BaseSettings):
             raise ValueError("Explicit frontend origins are required")
         if self.environment == "production" and not self.cookie_secure:
             raise ValueError("Production requires secure cookies")
+        if self.cookie_samesite == "none" and not self.cookie_secure:
+            raise ValueError("SameSite=None requires secure cookies")
         return self

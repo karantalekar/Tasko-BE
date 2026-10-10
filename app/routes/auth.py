@@ -51,7 +51,7 @@ async def logout(request: Request, response: Response, user=Depends(current_user
         path="/",
         secure=request.app.state.settings.cookie_secure,
         httponly=True,
-        samesite="lax",
+        samesite=request.app.state.settings.cookie_samesite,
     )
 
 

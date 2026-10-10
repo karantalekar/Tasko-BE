@@ -87,7 +87,7 @@ Only Owner accounts can create teams. The creator owns that team. Owners manage 
 
 The conservative owner/member rule was selected because the live UI does not define access policy. A user's displayed job title is **not** an authorization role. Adding a member requires the exact email of an already registered account; this is an owner-controlled grant, not an email invitation workflow.
 
-Use a same-site frontend/API deployment (for example `app.example.com` and `api.example.com`) with HTTPS. A cross-site deployment requires a deliberate cookie/CSRF design change; merely adding a CORS origin does not override SameSite cookies. All frontend fetch calls must include `credentials: "include"`. Do not put session cookies/tokens in localStorage.
+Use a same-site frontend/API deployment (for example `app.example.com` and `api.example.com`) with HTTPS. For cross-site HTTPS deployments (Vercel with Render), set COOKIE_SAMESITE=none, COOKIE_SECURE=true, and ALLOWED_ORIGINS to a JSON array of exact frontend origins without trailing slashes. Origin validation and CSRF remain enforced. Browsers blocking third-party cookies may require a same-site deployment or frontend proxy. All frontend fetch calls, including login, must include `credentials: "include"`. Do not put session cookies/tokens in localStorage.
 
 ## API examples
 
