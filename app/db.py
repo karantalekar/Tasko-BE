@@ -15,6 +15,7 @@ def public(doc):
 
 
 async def ensure_indexes(db):
+    await db.meetings.create_index([("team_ids", 1), ("starts_at", -1), ("_id", -1)])
     await db.users.create_index("email", unique=True)
     await db.teams.create_index("owner_id")
     await db.memberships.create_index([("team_id", 1), ("user_id", 1)], unique=True)

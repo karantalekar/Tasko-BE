@@ -17,7 +17,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from .config import Settings
 from .db import ensure_indexes, now
 from .limiter import rate_limit
-from .routes import analytics, auth, teams, work
+from .routes import analytics, auth, teams, work, meetings
 from .schemas import ErrorOut
 from .security import COOKIE, digest
 
@@ -196,7 +196,7 @@ def create_app(settings=None, db=None, redis=None):
             "Retry-After",
         ],
     )
-    for router in (auth.router, teams.router, work.router, analytics.router):
+    for router in (auth.router, teams.router, work.router, analytics.router, meetings.router):
         app.include_router(router, prefix="/api/v1")
 
     @app.get("/health/live", tags=["Health"])

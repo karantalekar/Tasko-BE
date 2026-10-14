@@ -46,6 +46,12 @@ For local Python development, install uv, run `uv sync --frozen`, configure `.en
 
 ## Authentication and permissions
 
+### Meetings
+
+The frontend Meetings tab lets team owners enter an HTTP/HTTPS meeting URL, title, start/end times, and select one or more teams they own. `POST /api/v1/meetings` creates a single shared meeting. `GET /api/v1/meetings` returns only meetings for teams the current user owns or belongs to, with optional `team_id`, `from`, `to`, and `unread` filters and pagination. Access is rechecked on every request, so removing a team membership removes meeting access.
+
+The team calendar displays these meetings alongside existing events. Join meeting opens the entered URL directly. The header bell shows unread meeting invitations and polls every 30 seconds while the workspace is open. `POST /api/v1/meetings/{meeting_id}/read` saves read status separately for each user. These are in-app notifications and calendar entries; external calendar sync, email, and browser push delivery are not configured.
+
 Team creation accepts `organization` and `email_domain` (for example, `Whitecode` and
 `whitecode.com`). The frontend requires both. For compatibility, API clients that omit
 them default to the team name and owner's email domain. Owners can update these fields
@@ -88,6 +94,24 @@ Only Owner accounts can create teams. The creator owns that team. Owners manage 
 The conservative owner/member rule was selected because the live UI does not define access policy. A user's displayed job title is **not** an authorization role. Adding a member requires the exact email of an already registered account; this is an owner-controlled grant, not an email invitation workflow.
 
 Use a same-site frontend/API deployment (for example `app.example.com` and `api.example.com`) with HTTPS. For cross-site HTTPS deployments (Vercel with Render), set COOKIE_SAMESITE=none, COOKIE_SECURE=true, and ALLOWED_ORIGINS to a JSON array of exact frontend origins without trailing slashes. Origin validation and CSRF remain enforced. Browsers blocking third-party cookies may require a same-site deployment or frontend proxy. All frontend fetch calls, including login, must include `credentials: "include"`. Do not put session cookies/tokens in localStorage.
+
+### Local frontend and backend
+
+From `Tasko-BE`, run `docker compose up --build -d`. From the frontend root, set `NEXT_PUBLIC_API_URL=/api/v1` in `.env.local` and run `npm.cmd run dev`. The Next.js development proxy forwards `/api/v1/*` to `http://127.0.0.1:8000`, keeping browser requests and session cookies on the frontend origin even when opening the frontend by its network IP. Use `COOKIE_SECURE=false` and `COOKIE_SAMESITE=lax` for local HTTP, and include the frontend's exact origin in `ALLOWED_ORIGINS`. Restart the frontend after changing environment variables.
+
+### Local frontend calling Render
+
+If the frontend uses `NEXT_PUBLIC_API_URL=https://tasko-be.onrender.com/api/v1`, configure the Render backend's environment, not just the local backend `.env`:
+
+```dotenv
+ALLOWED_ORIGINS=["http://localhost:3000","http://172.19.80.1:3000","https://example.com"]
+COOKIE_SECURE=true
+COOKIE_SAMESITE=none
+```
+
+Replace `https://example.com` with your deployed frontend origin and the IP address with the actual address used in the browser. Redeploy the Render service after changing its environment. Origins include the scheme, host, and port; `http://localhost:172.19.80.1:3000` is invalid. Local backend `.env` changes only affect a backend running locally.
+
+A session request returning 401 before login is expected. For an allowed origin, that response should still include `Access-Control-Allow-Origin` and `Access-Control-Allow-Credentials: true`. If cross-site session cookies are blocked by the browser, use a same-site deployment or frontend proxy.
 
 ## API examples
 
